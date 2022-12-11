@@ -19,16 +19,19 @@ export function makeTxn(usr, amount = accountBalance, narr = "") {
         setTimeout(r, 1000);
     });
 }
-export function checkBalance(Withdrawl) {
-    if (Withdrawl > accountBalance) {
-        return false;
-    }
-    else {
-        return true;
-    }
+export const getBalance = () => new Promise((res) => res(console.log(`You have: ${accountBalance} in your ACcount`)));
+export async function checkBalance(Withdrawl) {
+    return new Promise((res) => {
+        if (Withdrawl > accountBalance) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    });
 }
-export function withdrawl(amount, user, narr = "") {
-    if (checkBalance(amount)) {
+export async function withdrawl(amount, user, narr = "") {
+    if (await checkBalance(amount)) {
         makeTxn(user, amount, narr);
         accountBalance -= amount;
         return accountBalance;
@@ -45,15 +48,14 @@ export function getStatement() {
         console.log('# Date \t\t Narration\t Amount');
         let counter = 1;
         stmt.forEach(t => {
-            console.log(`${counter}. ${t.txnDate.getDate() + '-' + t.txnDate.getMonth() + '-' + t.txnDate.getFullYear()}\t
-                 ${t.narration}\t${t.txnAmount}\n`);
+            console.log(`${counter}. ${t.txnDate.getDate() + '-' + t.txnDate.getMonth() + '-' + t.txnDate.getFullYear()}\t${t.narration}\t${t.txnAmount}\n`);
             counter++;
         });
-        setTimeout(res, 1000);
+        //setTimeout(res,1000);       
     });
 }
-export function fundsTransfer(usr, amount, narr) {
-    if (checkBalance(amount)) {
+export async function fundsTransfer(usr, amount, narr) {
+    if (await checkBalance(amount)) {
         makeTxn(usr, amount, narr);
         return 'Txn Successfull';
     }
