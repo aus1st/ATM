@@ -1,9 +1,4 @@
-import { getUserCreds, validateUser, welComeScreen, startProgram } from "./helper.js";
-import { getBalance } from '../Repos/accounting.js';
-await welComeScreen('A T M . CLI');
-await getUserCreds();
-await validateUser();
-await getBalance();
+import { startProgram } from "./helper.js";
 //await getStatement();
 //await balanceEnqiry();
 //await atmOptions();

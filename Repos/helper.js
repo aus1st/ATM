@@ -2,7 +2,7 @@ import inquirer from 'inquirer';
 import { createSpinner } from 'nanospinner';
 import figlet from 'figlet';
 import gradient from 'gradient-string';
-import { balanceEnqiry, checkBalance, getStatement, makeTxn, withdrawl } from '../Repos/accounting.js';
+import { balanceEnqiry, checkBalance, getBalance, getStatement, makeTxn, withdrawl } from '../Repos/accounting.js';
 export let startProg = 'S';
 const sleep = (d = 1000) => new Promise((r) => setTimeout(r, d));
 let generalMsg = "Please wait...";
@@ -11,7 +11,7 @@ let user = {
     pin: 0
 };
 const spinner = createSpinner(generalMsg);
-let spinnerSuccess = (successMsg) => spinner.success({ text: successMsg });
+let spinnerSuccess = (successMsg) => new Promise((r) => r(spinner.success({ text: successMsg })));
 export async function welComeScreen(msg) {
     console.clear();
     figlet(msg, (err, data) => {
@@ -126,104 +126,119 @@ async function getFtInput() {
 }
 export async function performTxn(selectedOpt) {
     //let selectedOpt = await atmOptions();
-    return new Promise(async (res, rej) => {
-        if (selectedOpt.includes("1")) {
-            let cashInput = await getCashInput();
-            //check balance
-            if (await checkBalance(cashInput)) {
-                //spinner.start();
-                let result = await withdrawl(cashInput, user, "Fast Cash withdrawl");
-                await sleep();
-                if (typeof result === 'string') {
-                    console.log(result);
-                }
-                else {
-                    console.log('Transaction Successfull');
-                    await balanceEnqiry();
-                    //spinner.stop();
-                }
-            }
-        }
-        else if (selectedOpt.includes("2")) {
-            let cashInput = await getCashInput();
-            //check balance
-            if (await checkBalance(cashInput)) {
-                //spinner.start();
-                let result = await withdrawl(cashInput, user, "Cash withdrawl");
-                await sleep();
-                if (typeof result === 'string') {
-                    console.log(result);
-                }
-                else {
-                    console.log('Transaction Successfull');
-                    //spinner.stop();
-                    await balanceEnqiry();
-                }
-            }
-            //await sleep();
-        }
-        else if (selectedOpt.includes("3")) {
-            let billPaymet = await getBillPaymentInput();
-            //check balance
-            if (await checkBalance(billPaymet.invoiceAmount)) {
-                // spinner.start();
-                let result = await withdrawl(billPaymet.invoiceAmount, user, billPaymet.serviceProvider + '\n' + billPaymet.invoiceNumber);
-                await sleep();
-                if (typeof result === 'string') {
-                    console.log(result);
-                }
-                else {
-                    console.log('Transaction Successfull');
-                    await balanceEnqiry();
-                    //spinner.stop();
-                }
-            }
-        }
-        else if (selectedOpt.includes("4")) {
-            let ftTxn = await getFtInput();
-            //check balance
-            if (await checkBalance(ftTxn.transferAmount)) {
-                // spinner.start();
-                let result = await withdrawl(ftTxn.transferAmount, user, 'FT ' + ftTxn.bene + '\n' + ftTxn.accountNumber);
-                await sleep();
-                if (typeof result === 'string') {
-                    console.log(result);
-                }
-                else {
-                    console.log('Transaction Successfull');
-                    await balanceEnqiry();
-                    // spinner.stop();
-                }
-            }
-        }
-        else if (selectedOpt.includes("5")) {
+    // return new Promise( (res, rej) => {
+    //    res(async()=>{
+    if (selectedOpt.includes("1")) {
+        let cashInput = await getCashInput();
+        //check balance
+        if (await checkBalance(cashInput)) {
+            spinner.start();
+            let result = await withdrawl(cashInput, user, "Fast Cash withdrawl");
             await sleep();
-            await getStatement();
+            if (typeof result === 'string') {
+                // console.log(result); 
+            }
+            else {
+                // console.log('Transaction Successfull');
+                await spinnerSuccess('Transaction Successfull');
+                await balanceEnqiry();
+                //  spinner.stop();
+            }
         }
-        else if (selectedOpt.includes("6")) {
-            //await sleep();
-            await balanceEnqiry();
+    }
+    else if (selectedOpt.includes("2")) {
+        let cashInput = await getCashInput();
+        //check balance
+        if (await checkBalance(cashInput)) {
+            //spinner.start();
+            let result = await withdrawl(cashInput, user, "Cash withdrawl");
+            await sleep();
+            if (typeof result === 'string') {
+                console.log(result);
+            }
+            else {
+                //console.log('Transaction Successfull'); 
+                spinnerSuccess('Transaction Successfull');
+                //spinner.stop();
+                await balanceEnqiry();
+            }
         }
-        else if (selectedOpt.includes("7")) {
-            //await sleep();
-            startProg = 'E';
+        //await sleep();
+    }
+    else if (selectedOpt.includes("3")) {
+        let billPaymet = await getBillPaymentInput();
+        //check balance
+        if (await checkBalance(billPaymet.invoiceAmount)) {
+            // spinner.start();
+            let result = await withdrawl(billPaymet.invoiceAmount, user, billPaymet.serviceProvider + '\n' + billPaymet.invoiceNumber);
+            await sleep();
+            if (typeof result === 'string') {
+                console.log(result);
+            }
+            else {
+                // console.log('Transaction Successfull'); 
+                spinnerSuccess('Transaction Successfull');
+                await balanceEnqiry();
+                //spinner.stop();
+            }
         }
-    });
+    }
+    else if (selectedOpt.includes("4")) {
+        let ftTxn = await getFtInput();
+        //check balance
+        if (await checkBalance(ftTxn.transferAmount)) {
+            // spinner.start();
+            let result = await withdrawl(ftTxn.transferAmount, user, 'FT ' + ftTxn.bene + '\n' + ftTxn.accountNumber);
+            await sleep();
+            if (typeof result === 'string') {
+                console.log(result);
+            }
+            else {
+                //console.log('Transaction Successfull'); 
+                spinnerSuccess('Transaction Successfull');
+                await balanceEnqiry();
+                // spinner.stop();
+            }
+        }
+    }
+    else if (selectedOpt.includes("5")) {
+        await sleep();
+        await getStatement();
+    }
+    else if (selectedOpt.includes("6")) {
+        //await sleep();
+        await balanceEnqiry();
+    }
+    else if (selectedOpt.includes("7")) {
+        //await sleep();
+        startProg = 'E';
+    }
+    //});
+    //});
 }
 export async function userSelection() {
     let select = await inquirer.prompt({
         name: 'uInput',
-        type: 'input',
-        message: 'Please Press S to Start Programe E to exit'
+        type: 'confirm',
+        message: 'Would you like to make another Transaction'
     });
-    startProg = select.uInput;
-    return startProg;
+    return select.uInput;
+    //return startProg;
 }
+let keepContinue = false;
 export async function startProgram() {
-    let s = await userSelection();
-    //startProg = s;
-    while (startProg != "E") {
-        let x = await atmOptions();
-        await performTxn(x);
+    await welComeScreen('A T M . CLI');
+    await getUserCreds();
+    await validateUser();
+    await getBalance();
+    while (!keepContinue) {
+        let s = await userSelection();
+        if (s) {
+            let x = await atmOptions();
+            await performTxn(x);
+        }
+        else {
+            keepContinue = true;
+        }
     }
 }

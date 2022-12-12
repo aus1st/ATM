@@ -3,7 +3,7 @@ import { createSpinner } from 'nanospinner';
 import figlet, { fontsSync } from 'figlet';
 import gradient from 'gradient-string';
 import User from '../Models/user.js';
-import { balanceEnqiry, checkBalance, getStatement, makeTxn, withdrawl } from '../Repos/accounting.js'
+import { balanceEnqiry, checkBalance, getBalance, getStatement, makeTxn, withdrawl } from '../Repos/accounting.js'
 
 export let startProg = 'S';
 
@@ -17,7 +17,9 @@ let user: User = {
 };
 
 const spinner = createSpinner(generalMsg);
-let spinnerSuccess = (successMsg: string)=> spinner.success({text: successMsg});
+
+
+let spinnerSuccess = (successMsg: string)=> new Promise((r)=> r(spinner.success({text: successMsg})));
 
 
 export async function welComeScreen(msg: string) {
@@ -175,23 +177,24 @@ async function getFtInput() {
 
 export async function performTxn(selectedOpt: string) {
     //let selectedOpt = await atmOptions();
-    return new Promise( async(res, rej) => {
-
+    // return new Promise( (res, rej) => {
+    //    res(async()=>{
         if ((selectedOpt as string).includes("1")) {
             let cashInput = await getCashInput();
             
             //check balance
             if(await checkBalance(cashInput)) {
-                //spinner.start();
+                spinner.start();
                 let result = await withdrawl(cashInput,user,"Fast Cash withdrawl");               
                 await sleep();
                if(typeof result === 'string') {
-                   console.log(result); 
+                  // console.log(result); 
                } else {
-                console.log('Transaction Successfull');
-                await balanceEnqiry();
+               // console.log('Transaction Successfull');
+               await spinnerSuccess('Transaction Successfull');
+               await balanceEnqiry();
 
-                //spinner.stop();
+              //  spinner.stop();
 
                }
             }
@@ -206,7 +209,8 @@ export async function performTxn(selectedOpt: string) {
                if(typeof result === 'string') {
                    console.log(result); 
                } else {
-              console.log('Transaction Successfull'); 
+              //console.log('Transaction Successfull'); 
+              spinnerSuccess('Transaction Successfull');
               //spinner.stop();
                 await balanceEnqiry();
 
@@ -226,8 +230,9 @@ export async function performTxn(selectedOpt: string) {
                if(typeof result === 'string') {
                    console.log(result); 
                } else {
-                console.log('Transaction Successfull'); 
-                await balanceEnqiry();
+               // console.log('Transaction Successfull'); 
+               spinnerSuccess('Transaction Successfull'); 
+               await balanceEnqiry();
                 //spinner.stop();
                }
             }
@@ -243,7 +248,8 @@ export async function performTxn(selectedOpt: string) {
                if(typeof result === 'string') {
                    console.log(result); 
                } else {
-                console.log('Transaction Successfull'); 
+                //console.log('Transaction Successfull'); 
+                spinnerSuccess('Transaction Successfull');
                 await balanceEnqiry();
                // spinner.stop();
                }
@@ -258,8 +264,8 @@ export async function performTxn(selectedOpt: string) {
     //await sleep();
             startProg = 'E';
 }
-
-    });
+//});
+    //});
     
 }
 
@@ -267,19 +273,30 @@ export async function performTxn(selectedOpt: string) {
 export async function userSelection() {
     let select = await inquirer.prompt({
         name: 'uInput',
-        type:'input',
-        message: 'Please Press S to Start Programe E to exit'
+        type:'confirm',
+        message: 'Would you like to make another Transaction'
     });
-    startProg = select.uInput;
-    return startProg;
+    return select.uInput;
+    //return startProg;
 }
 
+let keepContinue = false;
 export async function startProgram() {
-    let s = await userSelection();
-    //startProg = s;
-    while(startProg!="E") {
-        let x = await atmOptions();
-        await performTxn(x);
+       
+    await welComeScreen('A T M . CLI');
+    await getUserCreds();
+    await validateUser();
+    await getBalance();
+
+    while(!keepContinue) {
+        let s = await userSelection();
+        if(s) {
+            let x = await atmOptions();
+            await performTxn(x);
+        } else {
+            keepContinue = true;
+        }
+      
         
     }
 
