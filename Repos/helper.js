@@ -1,14 +1,14 @@
-import inquirer from 'inquirer';
-import { createSpinner } from 'nanospinner';
-import figlet from 'figlet';
-import gradient from 'gradient-string';
-import { balanceEnqiry, checkBalance, getBalance, getStatement, makeTxn, withdrawl } from '../Repos/accounting.js';
-export let startProg = 'S';
+import inquirer from "inquirer";
+import { createSpinner } from "nanospinner";
+import figlet from "figlet";
+import gradient from "gradient-string";
+import { balanceEnqiry, checkBalance, getBalance, getStatement, makeTxn, withdrawl, } from "../Repos/accounting.js";
+export let startProg = "S";
 const sleep = (d = 1000) => new Promise((r) => setTimeout(r, d));
 let generalMsg = "Please wait...";
 let user = {
-    userName: '',
-    pin: 0
+    userName: "",
+    pin: 0,
 };
 const spinner = createSpinner(generalMsg);
 let spinnerSuccess = (successMsg) => new Promise((r) => r(spinner.success({ text: successMsg })));
@@ -23,7 +23,7 @@ export async function validateUser() {
     spinner.start();
     await sleep();
     spinner.success({
-        text: `Welcome: ${user.userName.toUpperCase()}`
+        text: `Welcome: ${user.userName.toUpperCase()}`,
     });
     //spinner.stop();
     await makeTxn(user);
@@ -32,102 +32,99 @@ export async function validateUser() {
 }
 export async function getUserCreds() {
     let inputUserName = await inquirer.prompt({
-        name: 'uName',
-        type: 'input',
-        message: 'Input User Id'
+        name: "uName",
+        type: "input",
+        message: "Input User Id",
     });
     user.userName = inputUserName.uName;
     let inputPin = await inquirer.prompt({
-        name: 'uPin',
-        type: 'password',
-        message: 'Input Pin:'
+        name: "uPin",
+        type: "password",
+        message: "Input Pin:",
     });
     user.pin = inputPin.uPin;
     return user;
 }
 export async function atmOptions() {
     let userSelection = await inquirer.prompt({
-        name: 'facility',
-        type: 'list',
-        message: 'What would you like to do? ',
+        name: "facility",
+        type: "list",
+        message: "What would you like to do? ",
         choices: [
-            "1. Fast Cash", "2. Cash Withdrawl", "3. Bill Payment",
-            "4. Funds Transfer", "5. Mini Statement",
-            "6. Balance Enquiry", "7. Exit"
-        ]
+            "1. Fast Cash",
+            "2. Cash Withdrawl",
+            "3. Bill Payment",
+            "4. Funds Transfer",
+            "5. Mini Statement",
+            "6. Balance Enquiry",
+            "7. Exit",
+        ],
     });
     return userSelection.facility;
 }
 async function getCashInput() {
     let inputFastCash = await inquirer.prompt({
-        name: 'fcash',
-        type: 'number',
-        message: 'Input Amount'
+        name: "fcash",
+        type: "number",
+        message: "Input Amount",
     });
     return inputFastCash.fcash;
 }
 async function getBillPaymentInput() {
     let selectProvider = await inquirer.prompt({
-        name: 'provider',
-        type: 'list',
-        choices: [
-            '1. K-E', '2. SSG', '3. KW&SB'
-        ],
-        message: 'Select Provider'
+        name: "provider",
+        type: "list",
+        choices: ["1. K-E", "2. SSG", "3. KW&SB"],
+        message: "Select Provider",
     });
     let invoiceNum = await inquirer.prompt({
-        name: 'invno',
-        type: 'input',
-        message: 'Input Invoice No. '
+        name: "invno",
+        type: "input",
+        message: "Input Invoice No. ",
     });
     await sleep();
-    spinnerSuccess('getting info...');
+    spinnerSuccess("getting info...");
     let inputBillPayment = await inquirer.prompt({
-        name: 'bPayment',
-        type: 'number',
-        message: 'Input Amount'
+        name: "bPayment",
+        type: "number",
+        message: "Input Amount",
     });
     let billPaymet = {
         invoiceNumber: invoiceNum.invno,
         serviceProvider: selectProvider,
-        invoiceAmount: inputBillPayment.bPayment
+        invoiceAmount: inputBillPayment.bPayment,
     };
     return billPaymet;
     //payment.invoiceAmount = inputBillPayment.bPayment;
 }
 async function getFtInput() {
     let selectBank = await inquirer.prompt({
-        name: 'bank',
-        type: 'list',
-        choices: [
-            'HBL', 'ABL', 'UBL', 'JSBL'
-        ],
-        message: 'Select Beneficiary Bank'
+        name: "bank",
+        type: "list",
+        choices: ["HBL", "ABL", "UBL", "JSBL"],
+        message: "Select Beneficiary Bank",
     });
     let accountNo = await inquirer.prompt({
-        name: 'acno',
-        type: 'input',
-        message: 'Input Account No. '
+        name: "acno",
+        type: "input",
+        message: "Input Account No. ",
     });
     await sleep();
     //spinnerSuccess('getting info...');
     let transfAmount = await inquirer.prompt({
-        name: 'tAmount',
-        type: 'number',
-        message: 'Input Amount'
+        name: "tAmount",
+        type: "number",
+        message: "Input Amount",
     });
     let ftTxn = {
         accountNumber: accountNo.acno,
         bene: selectBank,
-        transferAmount: transfAmount.tAmount
+        transferAmount: transfAmount.tAmount,
     };
     return ftTxn;
     //payment.invoiceAmount = inputBillPayment.bPayment;
 }
 export async function performTxn(selectedOpt) {
-    //let selectedOpt = await atmOptions();
-    // return new Promise( (res, rej) => {
-    //    res(async()=>{
     if (selectedOpt.includes("1")) {
         let cashInput = await getCashInput();
         //check balance
@@ -135,15 +132,17 @@ export async function performTxn(selectedOpt) {
             spinner.start();
             let result = await withdrawl(cashInput, user, "Fast Cash withdrawl");
             await sleep();
-            if (typeof result === 'string') {
-                // console.log(result); 
+            if (typeof result === "string") {
+                // console.log(result);
             }
             else {
                 // console.log('Transaction Successfull');
-                await spinnerSuccess('Transaction Successfull');
+                await spinnerSuccess("Transaction Successfull");
                 await balanceEnqiry();
-                //  spinner.stop();
             }
+        }
+        else {
+            console.log("Insufficient Balance");
         }
     }
     else if (selectedOpt.includes("2")) {
@@ -153,15 +152,18 @@ export async function performTxn(selectedOpt) {
             //spinner.start();
             let result = await withdrawl(cashInput, user, "Cash withdrawl");
             await sleep();
-            if (typeof result === 'string') {
+            if (typeof result === "string") {
                 console.log(result);
             }
             else {
-                //console.log('Transaction Successfull'); 
-                spinnerSuccess('Transaction Successfull');
+                //console.log('Transaction Successfull');
+                spinnerSuccess("Transaction Successfull");
                 //spinner.stop();
                 await balanceEnqiry();
             }
+        }
+        else {
+            console.log("Insufficient Balance");
         }
         //await sleep();
     }
@@ -169,36 +171,38 @@ export async function performTxn(selectedOpt) {
         let billPaymet = await getBillPaymentInput();
         //check balance
         if (await checkBalance(billPaymet.invoiceAmount)) {
-            // spinner.start();
-            let result = await withdrawl(billPaymet.invoiceAmount, user, billPaymet.serviceProvider + '\n' + billPaymet.invoiceNumber);
+            spinner.start();
+            let result = await withdrawl(billPaymet.invoiceAmount, user, "Bill Pay of :" + billPaymet.invoiceNumber);
             await sleep();
-            if (typeof result === 'string') {
+            if (typeof result === "string") {
                 console.log(result);
             }
             else {
-                // console.log('Transaction Successfull'); 
-                spinnerSuccess('Transaction Successfull');
+                spinnerSuccess("Transaction Successfull");
                 await balanceEnqiry();
-                //spinner.stop();
             }
+        }
+        else {
+            console.log("Insufficient Balance");
         }
     }
     else if (selectedOpt.includes("4")) {
         let ftTxn = await getFtInput();
         //check balance
         if (await checkBalance(ftTxn.transferAmount)) {
-            // spinner.start();
-            let result = await withdrawl(ftTxn.transferAmount, user, 'FT ' + ftTxn.bene + '\n' + ftTxn.accountNumber);
+            spinner.start();
+            let result = await withdrawl(ftTxn.transferAmount, user, "FT " + ftTxn.bene + " " + ftTxn.accountNumber);
             await sleep();
-            if (typeof result === 'string') {
+            if (typeof result === "string") {
                 console.log(result);
             }
             else {
-                //console.log('Transaction Successfull'); 
-                spinnerSuccess('Transaction Successfull');
+                spinnerSuccess("Transaction Successfull");
                 await balanceEnqiry();
-                // spinner.stop();
             }
+        }
+        else {
+            console.log("Insufficient Balance");
         }
     }
     else if (selectedOpt.includes("5")) {
@@ -206,28 +210,24 @@ export async function performTxn(selectedOpt) {
         await getStatement();
     }
     else if (selectedOpt.includes("6")) {
-        //await sleep();
         await balanceEnqiry();
     }
     else if (selectedOpt.includes("7")) {
-        //await sleep();
-        startProg = 'E';
+        startProg = "E";
     }
-    //});
-    //});
 }
 export async function userSelection() {
     let select = await inquirer.prompt({
-        name: 'uInput',
-        type: 'confirm',
-        message: 'Would you like to make another Transaction'
+        name: "uInput",
+        type: "confirm",
+        message: "Would you like to make Transaction",
     });
     return select.uInput;
     //return startProg;
 }
 let keepContinue = false;
 export async function startProgram() {
-    await welComeScreen('A T M . CLI');
+    await welComeScreen("A T M");
     await getUserCreds();
     await validateUser();
     await getBalance();

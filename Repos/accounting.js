@@ -1,30 +1,30 @@
-let accountBalance = 5000;
+let accountBalance = Math.floor(Math.random() * 5000);
 let stmt = [];
-//const sleep = (d=1000)=> new Promise((r) => setTimeout(r,d));
-//let myAdd: (a: number, b: number)=> number = (a,b)=> a+b;
-export function makeTxn(usr, amount = accountBalance, narr = "") {
-    return new Promise((r) => {
-        r(() => {
-            try {
-                stmt.push({
-                    userName: usr.userName,
-                    txnAmount: amount,
-                    narration: 'Opening Bal',
-                    txnDate: new Date()
-                });
-                //console.log(stmt);
-            }
-            catch (error) {
-                console.log('Getting some difficulty in making Txn');
-            }
+function insertIntoStmt(usr, amount = accountBalance, narr = "") {
+    try {
+        stmt.push({
+            userName: usr.userName,
+            txnAmount: amount,
+            narration: stmt.length == 0 ? 'Opening Bal' : narr,
+            txnDate: new Date()
         });
+        //console.log(stmt);
+    }
+    catch (error) {
+        console.log('Getting some difficulty in making Txn');
+    }
+}
+export function makeTxn(usr, amount = accountBalance, narr = "") {
+    //console.log('making txn called');
+    return new Promise((r, rej) => {
+        r(insertIntoStmt(usr, amount, narr));
         //setTimeout(r, 1000);
     });
 }
 export const getBalance = () => new Promise((res) => res(console.log(`You have: ${accountBalance} in your ACcount`)));
-export async function checkBalance(Withdrawl) {
+export function checkBalance(Withdrawl) {
     return new Promise((res) => {
-        if (Withdrawl > accountBalance) {
+        if (Withdrawl < accountBalance) {
             res(true);
         }
         else {
@@ -33,6 +33,7 @@ export async function checkBalance(Withdrawl) {
     });
 }
 export async function withdrawl(amount, user, narr = "") {
+    //console.log('inside withdrawl');
     if (await checkBalance(amount)) {
         await makeTxn(user, amount, narr);
         accountBalance -= amount;
@@ -46,17 +47,14 @@ export async function balanceEnqiry() {
     return new Promise((res) => res(console.log(`$ you have ${accountBalance} remaining in your account \n`)));
 }
 export function getStatement() {
-    return new Promise((res) => {
-        res(() => {
-            console.log('# Date \t\t Narration\t Amount');
-            let counter = 1;
-            stmt.forEach(t => {
-                console.log(`${counter}. ${t.txnDate.getDate() + '-' + t.txnDate.getMonth() + '-' + t.txnDate.getFullYear()}\t${t.narration}\t${t.txnAmount}\n`);
-                counter++;
-            });
-        });
-        //setTimeout(res,1000);       
+    let stream = "";
+    stream += '# Date \t\t Narration\t\t Amount\n';
+    let counter = 1;
+    stmt.forEach(t => {
+        stream += `${counter}. ${t.txnDate.getDate() + '-' + t.txnDate.getMonth() + '-' + t.txnDate.getFullYear()}\t${t.narration}\t\t${t.txnAmount}\n`;
+        counter++;
     });
+    return new Promise((res) => res(console.log(stream)));
 }
 export async function fundsTransfer(usr, amount, narr) {
     if (await checkBalance(amount)) {
